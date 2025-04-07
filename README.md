@@ -16,6 +16,7 @@ First, populate `./src/conf/wandb.yaml` with your wandb info.
 
 To train for specific tasks, please run
 ```
+conda activate ltf
 cd ./src
 python train.py --conf ./conf/task_name.yaml
 ```
