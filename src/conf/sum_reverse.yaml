@@ -1,0 +1,26 @@
+inherit: 
+    - models/tiny1_new.yaml
+    - wandb.yaml
+
+model:
+    n_dims: 6
+    n_positions: 4096
+    linear_embedding: True
+
+training:
+    task: sum_reverse
+    test_len: 24
+    batch_size: 64
+    learning_rate: 0.0001
+    train_steps: 100001
+    curriculum:
+        points:
+            start: 2
+            end: 20
+            inc: 1
+            interval: 500
+
+out_dir: ../models/sum_reverse
+test_run: False
+wandb:
+    name: "sum_reverse"

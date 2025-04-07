@@ -1,0 +1,26 @@
+inherit: 
+    - models/tiny1.yaml
+    - wandb.yaml
+
+model:
+    n_dims: 6
+    n_positions: 4096
+    linear_embedding: True
+
+training:
+    task: copy
+    test_len : 30
+    batch_size: 64
+    learning_rate: 0.0001
+    train_steps: 100001
+    curriculum:
+        points:
+            start: 2
+            end: 20
+            inc: 1
+            interval: 1000
+
+out_dir: ../models/copy
+test_run: False
+wandb:
+    name: "copy"
