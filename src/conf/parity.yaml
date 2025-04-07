@@ -1,5 +1,5 @@
 inherit: 
-    - models/tiny11_new.yaml
+    - models/parity.yaml
     - wandb.yaml
 
 model:

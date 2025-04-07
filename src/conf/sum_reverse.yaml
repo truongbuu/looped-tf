@@ -1,5 +1,5 @@
 inherit: 
-    - models/tiny1_new.yaml
+    - models/sum_reverse.yaml
     - wandb.yaml
 
 model:

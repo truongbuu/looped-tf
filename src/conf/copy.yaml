@@ -1,5 +1,5 @@
 inherit: 
-    - models/tiny1.yaml
+    - models/copy.yaml
     - wandb.yaml
 
 model:
