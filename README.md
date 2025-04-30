@@ -25,3 +25,16 @@ python train.py --conf ./conf/task_name.yaml
 
 where `task_name` can be "parity", "copy", "addition", "multi" (for multiplication), "sum_reverse", "dict" (for unique set).
 The training log and models would be saved in `./models`.
+
+If you find the code useful please cite:
+
+```
+@inproceedings{
+fan2025looped,
+title={Looped Transformers for Length Generalization},
+author={Ying Fan and Yilun Du and Kannan Ramchandran and Kangwook Lee},
+booktitle={The Thirteenth International Conference on Learning Representations},
+year={2025},
+url={https://openreview.net/forum?id=2edigk8yoU}
+}
+```
