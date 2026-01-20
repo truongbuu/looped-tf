@@ -9,7 +9,7 @@ model:
 
 training:
     task: parity
-    test_len : 40
+    test_len : 50
     batch_size: 64
     learning_rate: 0.0001
     train_steps: 100001

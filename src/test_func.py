@@ -34,8 +34,8 @@ def test_model_adaptive(model, test_len, test_bs, generate_prompt_matrix, conver
             acc_loss = loss_func(last[mask == 1].cuda(), results[mask == 1].cuda())
             acc_list.append(acc)
             cross_entropy_list.append(acc_loss.item())
-            # print("acc_list =", acc_list)
-            # print("cross_entropy_list =", cross_entropy_list)
+        print("acc_list =", acc_list)
+        print("cross_entropy_list =", cross_entropy_list)
         index = torch.argmin(torch.tensor(cross_entropy_list))
         return acc_list[index], index
 
