@@ -1,3 +1,4 @@
+
 import os
 from random import randint
 import uuid
@@ -18,6 +19,7 @@ from test_func import test_model, test_model_adaptive, test_model_multi, test_mo
 
 generate_function_map = {
     "parity": generate_prompt_matrix_parity,
+    "modulo": generate_prompt_matrix_modulo,
     "copy": generate_prompt_matrix_copy,
     "addition": generate_prompt_matrix_addition,
     "multi": generate_prompt_matrix_multi,
@@ -53,8 +55,9 @@ def train(model, args):
     bsize = args.training.batch_size
     pbar = tqdm(range(starting_step, args.training.train_steps))
     loss_func = nn.CrossEntropyLoss()
-    for i in pbar:   
+    for i in pbar:
         if args.training.task != "multi":
+            #import pdb; pdb.set_trace()
             # multiplication task needs two lengths
             xs, batch_num, ys, mask = generate_function_map[args.training.task](bsize, min_num_digits = 1, max_num_digits = curriculum.n_points, max_len = curriculum.n_points+1)
         else:
@@ -64,7 +67,7 @@ def train(model, args):
             xs = torch.tensor(convert_to_one_hot(xs))
         xs = xs.cuda()
         ys = ys.cuda()
-        
+
         with torch.enable_grad():
             optimizer.zero_grad()
             if args.training.task != "multi":
@@ -77,9 +80,9 @@ def train(model, args):
             for t in range(bsize):
                 if args.training.task != "multi":
                     states_list.append(states[batch_num[t].item()-1][t])
-                else: 
+                else:
                     states_list.append(states[batch_num[t].item()*batch_num_1[t].item()-1][t])
-            
+
             outputs = torch.stack(states_list)
             loss = loss_func(outputs[mask==1], ys[mask==1])
             loss.backward()
@@ -99,12 +102,12 @@ def train(model, args):
             wandb.log(
                 {
                     "training_loss": loss,
-                    "gradient_norm": grad_norm, 
+                    "gradient_norm": grad_norm,
                     "n_points": curriculum.n_points,
                 },
                 step=i,
             )
-            
+
         if (i) % 1000 == 0:
             print("current max training length = ", curriculum.n_points-1)
             test_acc_current = test_function_map[args.training.task](model, curriculum.n_points-1, 512, generate_function_map[args.training.task], convert_to_one_hot, one_hot_to_int, exact_match_accuracy)
@@ -136,7 +139,7 @@ def train(model, args):
         test_acc_chosen_final, _ = test_function_map_adaptive[args.training.task](model, test_len, 6400, generate_function_map[args.training.task], convert_to_one_hot, one_hot_to_int, exact_match_accuracy)
         print("test_acc_final = ", test_acc_final)
         print("test_acc_chosen_final = ", test_acc_chosen_final)
-    else:       
+    else:
         test_acc_final = test_function_map[args.training.task](model, test_len, 6400, generate_function_map[args.training.task], convert_to_one_hot, one_hot_to_int, exact_match_accuracy)
         test_acc_chosen_final, _ = test_function_map_adaptive[args.training.task](model, test_len, 6400, generate_function_map[args.training.task], convert_to_one_hot, one_hot_to_int, exact_match_accuracy)
         print("test_acc_final = ", test_acc_final)

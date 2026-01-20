@@ -3,18 +3,47 @@ import numpy as np
 
 # parity
 
-def generate_prompt_matrix_parity(b, max_len, min_num_digits=1, max_num_digits=10):
+def generate_prompt_matrix_parity(b, min_num_digits=1, max_num_digits=10, **kwargs):
+    max_len = max_num_digits + 1
     # Generate a batch of random positive integers
     batch_num_digits = np.random.randint(min_num_digits, max_num_digits, size=(b, 1))
-    
+
     # Compute the number of digits for each integer in the batch
     num_digits = batch_num_digits.flatten()
-    
+
     # Create the prompt matrix
     prompt_matrix = np.full((b, max_len), 3)
     y_matrix = np.full((b, max_len), 3)
     mask = np.full((b, max_len), 0)
-    
+    #import pdb; pdb.set_trace()
+    for i in range(b):
+        # generate random prompt digits
+        prompt_matrix[i, :num_digits[i]] = np.random.randint(low=0, high=2, size=num_digits[i])
+        # 2 represents equal sign
+        prompt_matrix[i, num_digits[i]] = 2
+        # 5 represents ignored locations in the answer
+        y_matrix[i, :(num_digits[i])] = 5
+        # compute the answer digits
+        y_matrix[i, (num_digits[i])] = np.sum(prompt_matrix[i, :num_digits[i]]) % 2
+        # mask: only use the part after the ignored digits
+        mask[i, (num_digits[i]):] = 1
+    return torch.tensor(prompt_matrix), torch.tensor(batch_num_digits), torch.tensor(y_matrix), torch.tensor(mask)
+
+# modulo 10
+
+def generate_prompt_matrix_modulo(b, min_num_digits=1, max_num_digits=10, **kwargs):
+    max_len = max_num_digits + 1
+    # Generate a batch of random positive integers
+    batch_num_digits = np.random.randint(min_num_digits, max_num_digits, size=(b, 1))
+
+    # Compute the number of digits for each integer in the batch
+    num_digits = batch_num_digits.flatten()
+
+    # Create the prompt matrix
+    prompt_matrix = np.full((b, max_len), 3)
+    y_matrix = np.full((b, max_len), 3)
+    mask = np.full((b, max_len), 0)
+    #import pdb; pdb.set_trace()
     for i in range(b):
         # generate random prompt digits
         prompt_matrix[i, :num_digits[i]] = np.random.randint(low=0, high=2, size=num_digits[i])
@@ -43,15 +72,15 @@ def decimal_to_binary(decimal_num):
 def generate_prompt_matrix_sum_reverse(b, max_len, min_num_digits=1, max_num_digits=10):
     # Generate a batch of random positive integers
     batch_num_digits = np.random.randint(min_num_digits, max_num_digits, size=(b, 1))
-    
+
     # Compute the number of digits for each integer in the batch
     num_digits = batch_num_digits.flatten()
-    
+
     # Create the prompt matrix
     prompt_matrix = np.full((b, max_len+7), 3)
     y_matrix = np.full((b, max_len+7), 3)
     mask = np.full((b, max_len+7), 0)
-    
+
     for i in range(b):
         prompt_matrix[i, :num_digits[i]] = np.random.randint(low=0, high=2, size=num_digits[i])
         prompt_matrix[i, num_digits[i]] = 5 # equals sign
@@ -69,10 +98,10 @@ def generate_prompt_matrix_sum_reverse(b, max_len, min_num_digits=1, max_num_dig
 def generate_prompt_matrix_copy(b, max_len, min_num_digits=1, max_num_digits=10):
     # Generate a batch of random positive integers
     batch_num_digits = np.random.randint(min_num_digits, max_num_digits, size=(b, 1))
-    
+
     # Compute the number of digits for each integer in the batch
     num_digits = batch_num_digits.flatten()
-    
+
     # Create the prompt matrix
     prompt_matrix = np.full((b, 2*max_len), 3)
     y_matrix = np.full((b, 2*max_len), 3)
@@ -113,15 +142,15 @@ def binary_addition(a, b):
 def generate_prompt_matrix_addition(b, max_len, min_num_digits=1, max_num_digits=10):
     # Generate a batch of random positive integers
     batch_num_digits = np.random.randint(min_num_digits, max_num_digits, size=(b, 1))
-    
+
     # Compute the number of digits for each integer in the batch
     num_digits = batch_num_digits.flatten()
-    
+
     # Create the prompt matrix
     prompt_matrix = np.full((b, 3*max_len), 3)
     y_matrix = np.full((b, 3*max_len), 3)
     mask = np.full((b, 3*max_len), 0)
-    
+
     for i in range(b):
         prompt_matrix[i, :num_digits[i]] = np.random.randint(low=0, high=2, size=num_digits[i])
         prompt_matrix[i, num_digits[i]] = 2 # plus sign
@@ -143,23 +172,23 @@ def binary_multiply(arr1, arr2):
     # Reverse the arrays to represent the binary numbers correctly
     arr1 = arr1[::-1]
     arr2 = arr2[::-1]
-    
+
     result = [0] * (len(arr1) + len(arr2))
-    
+
     # Multiply each bit of the second number with the first number
     for i in range(len(arr2)):
         carry = 0
         for j in range(len(arr1)):
             # Multiply the current bits and add the previous carry
             product = arr2[i] * arr1[j] + result[i+j] + carry
-            
+
             # Update the result and carry
             result[i+j] = product % 2
             carry = product // 2
-        
+
         # Add any remaining carry to the result
         result[i+len(arr1)] = carry
-    
+
     return result
 
 def generate_prompt_matrix_multi(b, max_len, min_num_digits=1, max_num_digits=10, test=False):
@@ -168,16 +197,16 @@ def generate_prompt_matrix_multi(b, max_len, min_num_digits=1, max_num_digits=10
     if test:
         batch_num_digits = np.random.randint(2, 3, size=(b, 1))
     batch_num_digits_1 = np.random.randint(min_num_digits, max_num_digits, size=(b, 1))
-    
+
     # Compute the number of digits for each integer in the batch
     num_digits = batch_num_digits.flatten()
     num_digits_1 = batch_num_digits_1.flatten()
-    
+
     # Create the prompt matrix
     prompt_matrix = np.full((b, 4*max_len), 3)
     y_matrix = np.full((b, 4*max_len), 3)
     mask = np.full((b, 4*max_len), 0)
-    
+
     for i in range(b):
         prompt_matrix[i, :num_digits[i]] = np.random.randint(low=0, high=2, size=num_digits[i])
         prompt_matrix[i, num_digits[i]] = 2 # multiplication sign
@@ -203,15 +232,15 @@ def compute_ordered_array(arr):
 def generate_prompt_matrix_dict(b, max_len, min_num_digits=1, max_num_digits=10):
     # Generate a batch of random positive integers
     batch_num_digits = np.random.randint(min_num_digits, max_num_digits, size=(b, 1))
-    
+
     # Compute the number of digits for each integer in the batch
     num_digits = batch_num_digits.flatten()
-    
+
     # Create the prompt matrix
     prompt_matrix = np.full((b, max_len*2), 53)
     y_matrix = np.full((b, max_len*2), 53)
     mask = np.full((b, max_len*2), 0)
-    
+
     for i in range(b):
         prompt_matrix[i, :num_digits[i]] = np.random.randint(low=0, high=50, size=num_digits[i])
         prompt_matrix[i, num_digits[i]] = 51 # equals sign
