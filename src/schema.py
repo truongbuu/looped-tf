@@ -36,7 +36,7 @@ curriculum_schema = {
 }
 
 training_schema = {
-    "task": merge(tstring, allowed(["parity", "sum_reverse", "copy", "dict", "multi", "addition"]), default("parity")),
+    "task": merge(tstring, allowed(["parity", "sum_reverse", "copy", "dict", "multi", "addition", "modulo10"]), default("parity")),
     "batch_size": merge(tinteger, default(64)),
     "test_len": merge(tinteger, default(10)),
     "learning_rate": merge(tfloat, default(3e-4)),

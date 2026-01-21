@@ -15,7 +15,7 @@ def generate_prompt_matrix_parity(b, min_num_digits=1, max_num_digits=10, **kwar
     prompt_matrix = np.full((b, max_len), 3)
     y_matrix = np.full((b, max_len), 3)
     mask = np.full((b, max_len), 0)
-    #import pdb; pdb.set_trace()
+
     for i in range(b):
         # generate random prompt digits
         prompt_matrix[i, :num_digits[i]] = np.random.randint(low=0, high=2, size=num_digits[i])
@@ -46,13 +46,13 @@ def generate_prompt_matrix_modulo(b, min_num_digits=1, max_num_digits=10, **kwar
     #import pdb; pdb.set_trace()
     for i in range(b):
         # generate random prompt digits
-        prompt_matrix[i, :num_digits[i]] = np.random.randint(low=0, high=2, size=num_digits[i])
-        # 2 represents equal sign
-        prompt_matrix[i, num_digits[i]] = 2
-        # 5 represents ignored locations in the answer
-        y_matrix[i, :(num_digits[i])] = 5
+        prompt_matrix[i, :num_digits[i]] = np.random.randint(low=0, high=10, size=num_digits[i])
+        # 10 represents equal sign
+        prompt_matrix[i, num_digits[i]] = 10
+        # 15 represents ignored locations in the answer
+        y_matrix[i, :(num_digits[i])] = 15
         # compute the answer digits
-        y_matrix[i, (num_digits[i])] = np.sum(prompt_matrix[i, :num_digits[i]]) % 2
+        y_matrix[i, (num_digits[i])] = np.sum(prompt_matrix[i, :num_digits[i]]) % 10
         # mask: only use the part after the ignored digits
         mask[i, (num_digits[i]):] = 1
     return torch.tensor(prompt_matrix), torch.tensor(batch_num_digits), torch.tensor(y_matrix), torch.tensor(mask)

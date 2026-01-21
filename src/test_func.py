@@ -3,10 +3,10 @@ import torch.nn as nn
 
 # for parity, sum reverse, copy, addition
 def test_model(model, test_len, test_bs, generate_prompt_matrix, convert_to_one_hot, one_hot_to_int, exact_match_accuracy):
-    with torch.no_grad(): 
+    with torch.no_grad():
         xs, batch_num, ys, mask = generate_prompt_matrix(test_bs, min_num_digits = test_len, max_num_digits = test_len+1, max_len = test_len+2)
         # 22 23 24 40
-        xs = torch.tensor(convert_to_one_hot(xs))
+        xs = torch.tensor(convert_to_one_hot(xs, model.n_dims))
         xs = xs.cuda()
         # ys = ys.cuda()
         states = model.looped_forward(xs, horizon = test_len+2)
@@ -21,7 +21,7 @@ def test_model_adaptive(model, test_len, test_bs, generate_prompt_matrix, conver
     with torch.no_grad():
         xs, batch_num, ys, mask = generate_prompt_matrix(test_bs, min_num_digits = test_len, max_num_digits = test_len+1, max_len = test_len+2)
         # 22 23 24 40
-        xs = torch.tensor(convert_to_one_hot(xs))
+        xs = torch.tensor(convert_to_one_hot(xs, model.n_dims))
         xs = xs.cuda()
         # ys = ys.cuda()
         states = model.looped_forward(xs, test_len + extra)
@@ -35,7 +35,7 @@ def test_model_adaptive(model, test_len, test_bs, generate_prompt_matrix, conver
             acc_list.append(acc)
             cross_entropy_list.append(acc_loss.item())
         print("acc_list =", acc_list)
-        print("cross_entropy_list =", cross_entropy_list)
+        print("cross_entropy_list =", cross_entropy_list) # note: this is the confidence score, not CE w.r.t groundtruth.
         index = torch.argmin(torch.tensor(cross_entropy_list))
         return acc_list[index], index
 

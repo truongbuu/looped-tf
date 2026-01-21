@@ -14,12 +14,12 @@ from models import build_general_model
 import wandb
 from utils import convert_to_one_hot, one_hot_to_int, exact_match_accuracy
 from torch_ema import ExponentialMovingAverage
-from generate_training_data import generate_prompt_matrix_parity, generate_prompt_matrix_copy, generate_prompt_matrix_addition, generate_prompt_matrix_multi, generate_prompt_matrix_sum_reverse, generate_prompt_matrix_dict
+from generate_training_data import generate_prompt_matrix_parity, generate_prompt_matrix_modulo, generate_prompt_matrix_copy, generate_prompt_matrix_addition, generate_prompt_matrix_multi, generate_prompt_matrix_sum_reverse, generate_prompt_matrix_dict
 from test_func import test_model, test_model_adaptive, test_model_multi, test_model_multi_adaptive, test_model_dict, test_model_dict_adaptive
 
 generate_function_map = {
     "parity": generate_prompt_matrix_parity,
-    "modulo": generate_prompt_matrix_modulo,
+    "modulo10": generate_prompt_matrix_modulo,
     "copy": generate_prompt_matrix_copy,
     "addition": generate_prompt_matrix_addition,
     "multi": generate_prompt_matrix_multi,
@@ -29,6 +29,7 @@ generate_function_map = {
 
 test_function_map = {
     "parity": test_model,
+    "modulo10": test_model,
     "copy": test_model,
     "addition": test_model,
     "multi": test_model_multi,
@@ -38,6 +39,7 @@ test_function_map = {
 
 test_function_map_adaptive = {
     "parity": test_model_adaptive,
+    "modulo10": test_model_adaptive,
     "copy": test_model_adaptive,
     "addition": test_model_adaptive,
     "multi": test_model_multi_adaptive,
@@ -57,14 +59,14 @@ def train(model, args):
     loss_func = nn.CrossEntropyLoss()
     for i in pbar:
         if args.training.task != "multi":
-            #import pdb; pdb.set_trace()
             # multiplication task needs two lengths
             xs, batch_num, ys, mask = generate_function_map[args.training.task](bsize, min_num_digits = 1, max_num_digits = curriculum.n_points, max_len = curriculum.n_points+1)
         else:
             xs, batch_num, batch_num_1, ys, mask = generate_prompt_matrix_multi(bsize, min_num_digits = 1, max_num_digits = curriculum.n_points, max_len = curriculum.n_points+1)
         #  since max_num_digits is unincliusive, the actual max number of digits is curriculum.n_points - 1
         if args.training.task != "dict":
-            xs = torch.tensor(convert_to_one_hot(xs))
+            #import pdb; pdb.set_trace()
+            xs = torch.tensor(convert_to_one_hot(xs, model.n_dims))
         xs = xs.cuda()
         ys = ys.cuda()
 
